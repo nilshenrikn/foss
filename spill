@@ -1,74 +1,103 @@
-import random, pygame
+# BIBLIOTEK
+import random
+import pygame
 pygame.init()
 pygame.font.init()
 
+# LAG OVERFLATE
+surface = pygame.display.set_mode((600, 400))
+pygame.display.set_caption("Spill")
+
+# FARGER
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
+# VERDIER
+game = True
+gameover = False
+begun = False
 score = 0
 
-myfont = pygame.font.SysFont('Arial', 30)
-textsurface = myfont.render(str(score), False, (0, 0, 0))
+y = 180
+v = 1
+a = 1
+dt1 = 0
+dt2 = 0
 
-y, v, a = 180, 1, 1
-dt1, dt2 = 0, 0
-y1 = random.randint(20, 380)
-y2 = random.randint(20, 380)
-y3 = random.randint(20, 380)
-y4 = random.randint(20, 380)
-y5 = random.randint(20, 380)
-x1, x2, x3, x4, x5 = 600, 600, 600, 600, 600
+x1 = random.randint(600, 900)
+x2 = random.randint(600, 900)
+x3 = random.randint(600, 900)
+x4 = random.randint(600, 900)
+x5 = random.randint(600, 900)
 
-start = False
-gameover = False
-spill = True
+y1 = random.randint(20, 68)
+y2 = random.randint(68, 136)
+y3 = random.randint(136, 204)
+y4 = random.randint(204, 272)
+y5 = random.randint(272, 380)
 
+# TEKST
+myfont = pygame.font.SysFont('Arial', 120)
+myfont2 = pygame.font.SysFont('Arial', 30)
+textsurface2 = myfont2.render("Trykk RETURN for å prøve igjen.", True, BLACK)
+textsurface3 = myfont2.render("Trykk space for å starte.", True, GREEN)
+
+# SPILLLØKKE
 while True:
-    pygame.time.delay(1)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             quit()
 
-    if spill is True:
+    # SPILL
+    if game is True:
+
+        # RENDERING
         surface.fill(BLACK)
 
-        spiller = pygame.Rect(100, y, 20, 20)
+        player = pygame.Rect(100, y, 20, 20)
         projektil1 = pygame.Rect(x1, y1, 20, 20)
         projektil2 = pygame.Rect(x2, y2, 20, 20)
         projektil3 = pygame.Rect(x3, y3, 20, 20)
         projektil4 = pygame.Rect(x4, y4, 20, 20)
         projektil5 = pygame.Rect(x5, y5, 20, 20)
 
-        pygame.draw.rect(surface, RED, spiller)
+        pygame.draw.rect(surface, RED, player)
         pygame.draw.rect(surface, GREEN, projektil1)
         pygame.draw.rect(surface, GREEN, projektil2)
         pygame.draw.rect(surface, GREEN, projektil3)
         pygame.draw.rect(surface, GREEN, projektil4)
         pygame.draw.rect(surface, GREEN, projektil5)
 
+        if begun is False:
+            surface.blit(textsurface3, (235, 35))
+
+        # KNAPPER/KONTROLL
         button = pygame.key.get_pressed()
 
         if button[pygame.K_SPACE]:
-            start = True
+            begun = True
             dt1 = 0
             y -= (v + a * dt2) / 1000
             dt2 += 1
+
         else:
             dt2 = 0
             y += (v + a * dt1) / 1000
             dt1 += 1
 
+        # RESTRIKSJON
         if y >= 380:
             y = 380
 
-        if start is True:
-            x1 -= 0.5
-            x2 -= 0.5
-            x3 -= 0.5
-            x4 -= 0.5
-            x5 -= 0.5
+        # BEVEGELSE AV PROJEKTILER
+        if begun is True:
+            x1 -= 0.8
+            x2 -= 0.8
+            x3 -= 0.8
+            x4 -= 0.8
+            x5 -= 0.8
 
         if x1 < 0:
             x1 = random.randint(600, 650)
@@ -86,25 +115,76 @@ while True:
             x4 = random.randint(600, 650)
             y4 = random.randint(20, 380)
 
-        if x5 < 0:
-            x5 = random.randint(600, 650)
-            y5 = random.randint(20, 380)
+        # KOLLISJON
+        if player.colliderect(projektil1):
+            game = False
+            gameover = True
+        if player.colliderect(projektil2):
+            game = False
+            gameover = True
+        if player.colliderect(projektil3):
+            game = False
+            gameover = True
+        if player.colliderect(projektil4):
+            game = False
+            gameover = True
+        if player.colliderect(projektil5):
+            game = False
+            gameover = True
 
-        if spiller.colliderect(projektil1):
-            spill = False
-        if spiller.colliderect(projektil2):
-            spill = False
-        if spiller.colliderect(projektil3):
-            spill = False
-        if spiller.colliderect(projektil4):
-            spill = False
-        if spiller.colliderect(projektil5):
-            spill = False
+        # KOLLISJON MED KANTER
+        if y >= 380 and begun is True:
+            game = False
+            gameover = True
 
-        if start is True:
-            score += 0.01
-        print("Score: ", round(score))
+        if y <= 0 and begun is True:
+            game = False
+            gameover = True
 
-    else:
-        surface.fill(RED)
-        surface.blit(textsurface, (0, 0))
+        # SCORE
+        score += 0.01
+
+    # GAMEOVER
+    if gameover is True:
+
+        # RENDERING
+        surface.fill(GREEN)
+        score = round(score)
+        if score >= 99999999:
+            score = 99999999
+        textsurface = myfont.render(str(score), True, BLACK)
+        surface.blit(textsurface, (10, 200))
+        surface.blit(textsurface2, (15, 340))
+
+        # KNAPPER/KONTROLL
+        button = pygame.key.get_pressed()
+
+        if button[pygame.K_RETURN]:
+            game = True
+            gameover = False
+            begun = False
+            score = 0
+
+            y = 180
+            v = 1
+            a = 1
+            dt1 = 0
+            dt2 = 0
+
+            x1 = random.randint(600, 900)
+            x2 = random.randint(600, 900)
+            x3 = random.randint(600, 900)
+            x4 = random.randint(600, 900)
+            x5 = random.randint(600, 900)
+
+            y1 = random.randint(20, 68)
+            y2 = random.randint(68, 136)
+            y3 = random.randint(136, 204)
+            y4 = random.randint(204, 272)
+            y5 = random.randint(272, 380)
+
+    # FORSINKELSE
+    pygame.time.delay(1)
+
+    # OPPDATER OVERFLATE
+    pygame.display.flip()
